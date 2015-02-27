@@ -21,6 +21,11 @@ namespace GISRZ.Models
 			this.connectionString = connectionString;
 		}
 
+		public RoleStore()
+		{
+			
+		}
+
 		#region IQueryableRoleStore Members
 		public IQueryable<TRole> Roles
 		{

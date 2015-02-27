@@ -81,14 +81,22 @@ namespace GISRZ.Models
 			if (string.IsNullOrWhiteSpace(network_id))
 				throw new ArgumentNullException("network_id");
 
-			return Task.Factory.StartNew(() =>
+			var user = new user()
 			{
-				using (SqlConnection connection = new SqlConnection(connectionString))
-					return connection.Query<user>("select * from Users where network_id = lower(@network_id)", new
-					{
-						network_id
-					}).SingleOrDefault();
-			});
+				network_id = network_id,
+			};
+
+			user.roles = new List<user_roles>();
+
+			return Task.FromResult<user>(user);
+			//return Task.Factory.StartNew(() =>
+			//{
+			//	using (SqlConnection connection = new SqlConnection(connectionString))
+			//		return connection.Query<user>("select * from Users where network_id = lower(@network_id)", new
+			//		{
+			//			network_id
+			//		}).SingleOrDefault();
+			//});
 		}
 
 		public Task UpdateAsync(user user)
@@ -220,13 +228,26 @@ namespace GISRZ.Models
 				throw new ArgumentNullException("roleName");
 			}
 
-			role thisRole = RoleStore<role>.FindByNameAsync(roleName);
-			if (thisRole == null)
+			RoleStore<role> thisRole = new RoleStore<role>();
+			thisRole.FindByNameAsync(roleName);
+			
+			user_roles ur = new user_roles();
+			ur.role_id = ;
+			
+			//thisRole = RoleStore<role>.FindByNameAsync(roleName);
+
+			if (user.roles.Contains(thisRole))
+				return Task.FromResult(false);
+
+			user.roles.Add(new user_roles(
 			{
-				user.roles.Add(thisRole);
+				user_id = user.user_id, role_id = thisRole.role_id
 			}
-			 
-			return Task.FromResult(true);
+			return Task.FromResult(
+			})));
+
+			
+			
 
 			
 		}
@@ -246,10 +267,10 @@ namespace GISRZ.Models
 			return Task.Factory.StartNew(() =>
 			{
 				using (SqlConnection connection = new SqlConnection(connectionString))
-					return connection.Query<user_roles>("select * from user_roles where User_Id = @user_id", new
+					return (IList<string>) connection.Query<user_roles>("select * from user_roles where User_Id = @user_id", new
 					{
 						user.user_id
-					}).ToList() as IList<string>;
+					}).ToList();
 			});
 		}
 
@@ -267,12 +288,12 @@ namespace GISRZ.Models
 				throw new ArgumentNullException("roleName");
 			}
 
-			IList<role> foo = db.Query<role>("select * from role where name = @name", new
+			IList<role> thisRole = db.Query<role>("select * from role where name = @name", new
 					{
 						roleName
 					}).ToList();
 
-			return Task.FromResult(foo.Count > 0);
+			return Task.FromResult(thisRole.Count > 0);
 		}
 
 		public Task RemoveFromRoleAsync(user user, string roleName)
@@ -289,18 +310,19 @@ namespace GISRZ.Models
 				throw new ArgumentNullException("roleName");
 			}
 
-			role role = this.RolesRepository.FindSingleOrDefault(
-				r =>
-					(r.Name == roleName));
+			var roleId = db.Query<role>("select role_id from role where name = @name", new
+			{
+				roleName
+			});
 
-			if (role == null)
+			if (roleId == null)
 			{
 				throw new InvalidOperationException("Role is null");
 			}
 
-			user.roles.Remove(role);
-
-			return Task.FromResult(0);
+			string query = "DELETE from user_roles where user_id = @user_id and role_id = @role_id";
+			db.Execute(query, new {user.user_id, ToInt32 = roleId});
+			return Task.FromResult(true);
 		}
 		#endregion
 
