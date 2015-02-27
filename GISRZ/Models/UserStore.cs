@@ -18,6 +18,8 @@ namespace GISRZ.Models
 		private bool Disposed;
 		private readonly string connectionString;
 
+
+
 		public UserStore(string connectionString)
 		{
 			if (string.IsNullOrWhiteSpace(connectionString))
@@ -214,6 +216,7 @@ namespace GISRZ.Models
 		}
 
 		#region IUserRoleStore Members
+		// check if user_role exists for user
 		public Task AddToRoleAsync(user user, string roleName)
 		{
 			ThrowIfDisposed();
@@ -228,28 +231,20 @@ namespace GISRZ.Models
 				throw new ArgumentNullException("roleName");
 			}
 
+			//get the role we're trying to add to the user
 			RoleStore<role> thisRole = new RoleStore<role>();
 			thisRole.FindByNameAsync(roleName);
-			
-			user_roles ur = new user_roles();
-			ur.role_id = ;
-			
-			//thisRole = RoleStore<role>.FindByNameAsync(roleName);
 
-			if (user.roles.Contains(thisRole))
+			//find the user/role in the user_role table
+			user_roles ur = new user_roles {user_id = user.user_id, role_id = thisRole.role_id};
+
+			//if we find the user/role in the table, return false
+			if (user.roles.Contains(ur))
 				return Task.FromResult(false);
 
-			user.roles.Add(new user_roles(
-			{
-				user_id = user.user_id, role_id = thisRole.role_id
-			}
-			return Task.FromResult(
-			})));
-
-			
-			
-
-			
+			//add the user/role to the user_role table and return true
+			user.roles.Add(ur);
+			return Task.FromResult(true);
 		}
 
 		public Task<IList<string>> GetRolesAsync(user user)

@@ -162,5 +162,11 @@ namespace GISRZ.Models
 		{
 			throw new NotImplementedException();
 		}
+
+		public int role_id
+		{
+			get;
+			set;
+		}
 	}
 }
