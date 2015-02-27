@@ -11,15 +11,13 @@ using Microsoft.AspNet.Identity;
 
 namespace GISRZ.Models
 {
-	public class UserStore : IUserStore<user>, IUserLoginStore<user>, IUserPasswordStore<user>, IUserSecurityStampStore<user>
+	public class UserStore : IUserStore<user>, IUserLoginStore<user>, IUserPasswordStore<user>, IUserSecurityStampStore<user>, IUserRoleStore<user>
 	{
 		GISPortalContext _context;
 		private IDbConnection db = new SqlConnection(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString);
 		private bool Disposed;
 		private readonly string connectionString;
-
-
-
+		
 		public UserStore(string connectionString)
 		{
 			if (string.IsNullOrWhiteSpace(connectionString))
@@ -42,8 +40,7 @@ namespace GISRZ.Models
 			return Task.Factory.StartNew(() =>
 			{
 				user.user_id = new int();
-				using (SqlConnection connection = new SqlConnection(connectionString))
-					connection.Execute("insert into Users(User_Id, network_id, first_name, last_name) values(@user_Id, @network_id, @first_name, @last_name)", user);
+				db.Execute("insert into Users(User_Id, network_id, first_name, last_name) values(@user_Id, @network_id, @first_name, @last_name)", user);
 			});
 		}
 
@@ -54,11 +51,7 @@ namespace GISRZ.Models
 
 			return Task.Factory.StartNew(() =>
 			{
-				using (SqlConnection connection = new SqlConnection(connectionString))
-					connection.Execute("delete from User where User_Id = @userId", new
-					{
-						user.user_id
-					});
+				db.Execute("delete from User where User_Id = @userId", new { user.user_id });
 			});
 		}
 
@@ -67,14 +60,11 @@ namespace GISRZ.Models
 			if (string.IsNullOrWhiteSpace(userId))
 				throw new ArgumentNullException("userId");
 
-			int parsedUserId = Convert.ToInt32(userId);
+			var parsedUserId = Convert.ToInt32(userId);
 			return Task.Factory.StartNew(() =>
 			{
 				using (SqlConnection connection = new SqlConnection(connectionString))
-					return connection.Query<user>("select * from Users where User_Id = @userId", new
-					{
-						userId = parsedUserId
-					}).SingleOrDefault();
+					return connection.Query<user>("select * from Users where User_Id = @userId", new { userId = parsedUserId }).SingleOrDefault();
 			});
 		}
 
@@ -83,22 +73,13 @@ namespace GISRZ.Models
 			if (string.IsNullOrWhiteSpace(network_id))
 				throw new ArgumentNullException("network_id");
 
-			var user = new user()
+			var user = new user
 			{
 				network_id = network_id,
+				roles = new List<user_roles>(),
 			};
 
-			user.roles = new List<user_roles>();
-
-			return Task.FromResult<user>(user);
-			//return Task.Factory.StartNew(() =>
-			//{
-			//	using (SqlConnection connection = new SqlConnection(connectionString))
-			//		return connection.Query<user>("select * from Users where network_id = lower(@network_id)", new
-			//		{
-			//			network_id
-			//		}).SingleOrDefault();
-			//});
+			return Task.FromResult(user);
 		}
 
 		public Task UpdateAsync(user user)
@@ -108,8 +89,7 @@ namespace GISRZ.Models
 
 			return Task.Factory.StartNew(() =>
 			{
-				using (SqlConnection connection = new SqlConnection(connectionString))
-					connection.Execute("update User set network_id = @network_id where network_id = @network_id", user);
+				db.Execute("update User set network_id = @network_id where network_id = @network_id", user);
 			});
 		}
 		#endregion
@@ -130,12 +110,8 @@ namespace GISRZ.Models
 			if (login == null)
 				throw new ArgumentNullException("login");
 
-			return Task.Factory.StartNew(() =>
-			{
-				using (SqlConnection connection = new SqlConnection(connectionString))
-					return connection.Query<user>("select * from Users where User_Id = @user_id",
-						login).SingleOrDefault();
-			});
+			return Task.Factory.StartNew(() => db.Query<user>("select * from Users where User_Id = @user_id",
+				login).SingleOrDefault());
 		}
 
 		public Task<IList<UserLoginInfo>> GetLoginsAsync(user user)
@@ -143,14 +119,10 @@ namespace GISRZ.Models
 			if (user == null)
 				throw new ArgumentNullException("user");
 
-			return Task.Factory.StartNew(() =>
+			return Task.Factory.StartNew(() => (IList<UserLoginInfo>)db.Query<UserLoginInfo>("select * from Users where User_Id = @user_id", new
 			{
-				using (SqlConnection connection = new SqlConnection(connectionString))
-					return (IList<UserLoginInfo>)connection.Query<UserLoginInfo>("select * from Users where User_Id = @user_id", new
-					{
-						user.user_id
-					}).ToList();
-			});
+				user.user_id
+			}).ToList());
 		}
 
 		public Task RemoveLoginAsync(user user, UserLoginInfo login)
@@ -195,14 +167,12 @@ namespace GISRZ.Models
 				throw new ArgumentNullException("user");
 
 			user.SecurityStamp = stamp;
-
 			return Task.FromResult(0);
 		}
 
 		#endregion
 
-		protected void Dispose(
-		bool disposing)
+		protected void Dispose(bool disposing)
 		{
 			Disposed = true;
 		}
@@ -217,7 +187,7 @@ namespace GISRZ.Models
 
 		#region IUserRoleStore Members
 		// check if user_role exists for user
-		public Task AddToRoleAsync(user user, string roleName)
+		public async Task AddToRoleAsync(user user, string roleName)
 		{
 			ThrowIfDisposed();
 
@@ -232,19 +202,27 @@ namespace GISRZ.Models
 			}
 
 			//get the role we're trying to add to the user
-			RoleStore<role> thisRole = new RoleStore<role>();
-			thisRole.FindByNameAsync(roleName);
-
+			RoleStore<role> roleStore = new RoleStore<role>(connectionString);
+			role thisRole = new role();
+			thisRole = await roleStore.FindByNameAsync(roleName);
+			
 			//find the user/role in the user_role table
-			user_roles ur = new user_roles {user_id = user.user_id, role_id = thisRole.role_id};
+			user_roles ur = new user_roles();
+			ur.user_id = user.user_id;
+			ur.role_id = thisRole.role_id;
 
 			//if we find the user/role in the table, return false
 			if (user.roles.Contains(ur))
-				return Task.FromResult(false);
+				throw new Exception("user/role exists");
 
 			//add the user/role to the user_role table and return true
 			user.roles.Add(ur);
-			return Task.FromResult(true);
+
+			await Task.Factory.StartNew(() =>
+			{
+				db.Query<user_roles>("INSERT INTO user_roles (user_id, role_id) VALUES(@user_id, @role_id)", ur);
+			});
+			await Task.FromResult(true);
 		}
 
 		public Task<IList<string>> GetRolesAsync(user user)
@@ -255,18 +233,7 @@ namespace GISRZ.Models
 			{
 				throw new ArgumentNullException("user");
 			}
-
-			//List<string> user_roles = new IList<user_roles>().Where(ur => ur.user_id == user.user_id).ToList();
-
-			//return Task.FromResult<IList<string>>(new List<user_roles>().Where(ur => ur.user_id == user.user_id).ToList());
-			return Task.Factory.StartNew(() =>
-			{
-				using (SqlConnection connection = new SqlConnection(connectionString))
-					return (IList<string>) connection.Query<user_roles>("select * from user_roles where User_Id = @user_id", new
-					{
-						user.user_id
-					}).ToList();
-			});
+			return Task.Factory.StartNew(() => (IList<string>) db.Query<user_roles>("select * from user_roles where User_Id = @user_id", new { user.user_id }).ToList());
 		}
 
 		public Task<bool> IsInRoleAsync(user user, string roleName)
@@ -283,11 +250,7 @@ namespace GISRZ.Models
 				throw new ArgumentNullException("roleName");
 			}
 
-			IList<role> thisRole = db.Query<role>("select * from role where name = @name", new
-					{
-						roleName
-					}).ToList();
-
+			IList<role> thisRole = db.Query<role>("select * from role where name = @name", new { roleName }).ToList();
 			return Task.FromResult(thisRole.Count > 0);
 		}
 
@@ -297,7 +260,7 @@ namespace GISRZ.Models
 
 			if (user == null)
 			{
-				throw new ArgumentNullException("employee");
+				throw new ArgumentNullException("user");
 			}
 
 			if (String.IsNullOrEmpty(roleName))
@@ -305,22 +268,95 @@ namespace GISRZ.Models
 				throw new ArgumentNullException("roleName");
 			}
 
-			var roleId = db.Query<role>("select role_id from role where name = @name", new
-			{
-				roleName
-			});
+			var roleId = db.Query<role>("select role_id from role where name = @name", new { roleName });
 
 			if (roleId == null)
 			{
 				throw new InvalidOperationException("Role is null");
 			}
-
-			string query = "DELETE from user_roles where user_id = @user_id and role_id = @role_id";
-			db.Execute(query, new {user.user_id, ToInt32 = roleId});
+			
+			db.Execute("DELETE from user_roles where user_id = @user_id and role_id = @role_id", new {user.user_id, ToInt32 = roleId});
 			return Task.FromResult(true);
 		}
 		#endregion
 
 
+		//Task IUserRoleStore<user, string>.AddToRoleAsync(user user, string roleName)
+		//{
+		//	ThrowIfDisposed();
+
+		//	if (user == null)
+		//	{
+		//		throw new ArgumentNullException("user");
+		//	}
+
+		//	if (String.IsNullOrEmpty(roleName))
+		//	{
+		//		throw new ArgumentNullException("roleName");
+		//	}
+
+		//	//get the role we're trying to add to the user
+		//	RoleStore<role> roleStore = new RoleStore<role>(connectionString);
+		//	var thisRole = new Task<role>;
+		//	thisRole = roleStore.FindByNameAsync(roleName);
+
+		//	//find the user/role in the user_role table
+		//	user_roles ur = new user_roles();
+		//	ur.user_id = user.user_id;
+		//	ur.role_id = thisRole.role_id;
+
+		//	//if we find the user/role in the table, return false
+		//	if (user.roles.Contains(ur))
+		//		throw new Exception("user/role exists");
+
+		//	//add the user/role to the user_role table and return true
+		//	user.roles.Add(ur);
+		//	return Task.FromResult(ur);
+		//}
+
+		//Task<IList<string>> IUserRoleStore<user, string>.GetRolesAsync(user user)
+		//{
+		//	throw new NotImplementedException();
+		//}
+
+		//Task<bool> IUserRoleStore<user, string>.IsInRoleAsync(user user, string roleName)
+		//{
+		//	throw new NotImplementedException();
+		//}
+
+		//Task IUserRoleStore<user, string>.RemoveFromRoleAsync(user user, string roleName)
+		//{
+		//	throw new NotImplementedException();
+		//}
+
+		//Task IUserStore<user, string>.CreateAsync(user user)
+		//{
+		//	throw new NotImplementedException();
+		//}
+
+		//Task IUserStore<user, string>.DeleteAsync(user user)
+		//{
+		//	throw new NotImplementedException();
+		//}
+
+		//Task<user> IUserStore<user, string>.FindByIdAsync(string userId)
+		//{
+		//	throw new NotImplementedException();
+		//}
+
+		//Task<user> IUserStore<user, string>.FindByNameAsync(string userName)
+		//{
+		//	throw new NotImplementedException();
+		//}
+
+		//Task IUserStore<user, string>.UpdateAsync(user user)
+		//{
+		//	throw new NotImplementedException();
+		//}
+
+		//void IDisposable.Dispose()
+		//{
+		//	throw new NotImplementedException();
+		//}
 	}
 }
