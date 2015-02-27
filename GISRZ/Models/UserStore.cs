@@ -61,11 +61,7 @@ namespace GISRZ.Models
 				throw new ArgumentNullException("userId");
 
 			var parsedUserId = Convert.ToInt32(userId);
-			return Task.Factory.StartNew(() =>
-			{
-				using (SqlConnection connection = new SqlConnection(connectionString))
-					return connection.Query<user>("select * from Users where User_Id = @userId", new { userId = parsedUserId }).SingleOrDefault();
-			});
+			return Task.Factory.StartNew(() => db.Query<user>("select * from Users where User_Id = @userId", new { userId = parsedUserId }).SingleOrDefault());
 		}
 
 		public Task<user> FindByNameAsync(string network_id)
@@ -73,13 +69,7 @@ namespace GISRZ.Models
 			if (string.IsNullOrWhiteSpace(network_id))
 				throw new ArgumentNullException("network_id");
 
-			var user = new user
-			{
-				network_id = network_id,
-				roles = new List<user_roles>(),
-			};
-
-			return Task.FromResult(user);
+			return Task.Factory.StartNew(() => db.Query<user>("select * from Users where network_Id = @network_id", new { network_id }).SingleOrDefault());
 		}
 
 		public Task UpdateAsync(user user)
@@ -225,7 +215,7 @@ namespace GISRZ.Models
 			await Task.FromResult(true);
 		}
 
-		public Task<IList<string>> GetRolesAsync(user user)
+		Task<IList<string>> IUserRoleStore<user, string>.GetRolesAsync(user user)
 		{
 			ThrowIfDisposed();
 
@@ -233,7 +223,9 @@ namespace GISRZ.Models
 			{
 				throw new ArgumentNullException("user");
 			}
-			return Task.Factory.StartNew(() => (IList<string>) db.Query<user_roles>("select * from user_roles where User_Id = @user_id", new { user.user_id }).ToList());
+			//return Task.Factory.StartNew(() => (IList<string>) db.Query<user_roles>("select * from user_roles where User_Id = @user_id", new { user.user_id }));
+			//return Task.FromResult<IList<string>>(user.roles.Select(r=>r.role.name).ToList());
+			return Task.Factory.StartNew(() => (IList<string>) (user.roles.Select(r => r.role.name).ToList()));
 		}
 
 		public Task<bool> IsInRoleAsync(user user, string roleName)
@@ -358,5 +350,7 @@ namespace GISRZ.Models
 		//{
 		//	throw new NotImplementedException();
 		//}
+
+		
 	}
 }
