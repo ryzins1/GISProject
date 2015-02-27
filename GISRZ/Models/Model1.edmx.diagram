@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="fa8c4a6f403847c9a9e2b6746875700b" Name="Diagram1">
+        <EntityTypeShape EntityType="gisportalModel.role" Width="1.5" PointX="0.75" PointY="2.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="gisportalModel.security" Width="1.5" PointX="13" PointY="2.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="gisportalModel.security_roles" Width="1.5" PointX="3" PointY="2.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="gisportalModel.user_roles" Width="1.5" PointX="10.5" PointY="2.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="gisportalModel.user" Width="1.5" PointX="5.75" PointY="0.75" IsExpanded="true" />
+        <AssociationConnector Association="gisportalModel.FK_security_roles_roles" ManuallyRouted="false" />
+        <AssociationConnector Association="gisportalModel.FK_user_roles_roles" ManuallyRouted="false" />
+        <AssociationConnector Association="gisportalModel.FK_security_roles_security" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

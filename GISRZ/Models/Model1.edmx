@@ -1,0 +1,339 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+	<!-- SSDL content -->
+	<edmx:StorageModels>
+	  <Schema Namespace="gisportalModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+		<EntityType Name="roles">
+		  <Key>
+			<PropertyRef Name="role_id" />
+		  </Key>
+		  <Property Name="role_id" Type="int" Nullable="false" />
+		  <Property Name="name" Type="varchar" MaxLength="50" Nullable="false" />
+		  <Property Name="disabled" Type="varchar" MaxLength="1" />
+		  <Property Name="disabled_date" Type="datetime" />
+		  <Property Name="disabled_user_id" Type="int" />
+		</EntityType>
+		<EntityType Name="security">
+		  <Key>
+			<PropertyRef Name="page_id" />
+		  </Key>
+		  <Property Name="page_id" Type="int" Nullable="false" />
+		  <Property Name="url" Type="varchar" MaxLength="255" Nullable="false" />
+		  <Property Name="name" Type="varchar" MaxLength="128" />
+		  <Property Name="description" Type="varchar" MaxLength="255" />
+		  <Property Name="disabled" Type="varchar" MaxLength="1" />
+		  <Property Name="disabled_date" Type="datetime" />
+		  <Property Name="disabled_user_id" Type="int" />
+		</EntityType>
+		<EntityType Name="security_roles">
+		  <Key>
+			<PropertyRef Name="role_id" />
+			<PropertyRef Name="page_id" />
+		  </Key>
+		  <Property Name="role_id" Type="int" Nullable="false" />
+		  <Property Name="page_id" Type="int" Nullable="false" />
+		  <Property Name="action_datetime" Type="datetime" />
+		  <Property Name="action_user" Type="int" />
+		  <Property Name="action_type" Type="varchar" MaxLength="50" />
+		</EntityType>
+		<EntityType Name="user_roles">
+		  <Key>
+			<PropertyRef Name="user_id" />
+			<PropertyRef Name="role_id" />
+		  </Key>
+		  <Property Name="user_id" Type="int" Nullable="false" />
+		  <Property Name="role_id" Type="int" Nullable="false" />
+		  <Property Name="action_datetime" Type="datetime" />
+		  <Property Name="action_user" Type="int" />
+		  <Property Name="action_type" Type="varchar" MaxLength="50" />
+		</EntityType>
+		<EntityType Name="users">
+		  <Key>
+			<PropertyRef Name="user_id" />
+		  </Key>
+		  <Property Name="user_id" Type="int" Nullable="false" />
+		  <Property Name="network_id" Type="varchar" MaxLength="10" Nullable="false" />
+		  <Property Name="employee_id" Type="int" />
+		  <Property Name="first_name" Type="varchar" MaxLength="50" />
+		  <Property Name="last_name" Type="varchar" MaxLength="50" />
+		  <Property Name="last_login" Type="datetime" />
+		  <Property Name="last_updated" Type="datetime" />
+		  <Property Name="disabled" Type="varchar" MaxLength="1" />
+		  <Property Name="disabled_date" Type="datetime" />
+		  <Property Name="disabled_user_id" Type="int" />
+		</EntityType>
+		<Association Name="FK_security_roles_roles">
+		  <End Role="roles" Type="Self.roles" Multiplicity="1" />
+		  <End Role="security_roles" Type="Self.security_roles" Multiplicity="*" />
+		  <ReferentialConstraint>
+			<Principal Role="roles">
+			  <PropertyRef Name="role_id" />
+			</Principal>
+			<Dependent Role="security_roles">
+			  <PropertyRef Name="role_id" />
+			</Dependent>
+		  </ReferentialConstraint>
+		</Association>
+		<Association Name="FK_security_roles_security">
+		  <End Role="security" Type="Self.security" Multiplicity="1" />
+		  <End Role="security_roles" Type="Self.security_roles" Multiplicity="*" />
+		  <ReferentialConstraint>
+			<Principal Role="security">
+			  <PropertyRef Name="page_id" />
+			</Principal>
+			<Dependent Role="security_roles">
+			  <PropertyRef Name="page_id" />
+			</Dependent>
+		  </ReferentialConstraint>
+		</Association>
+		<Association Name="FK_user_roles_roles">
+		  <End Role="roles" Type="Self.roles" Multiplicity="1" />
+		  <End Role="user_roles" Type="Self.user_roles" Multiplicity="*" />
+		  <ReferentialConstraint>
+			<Principal Role="roles">
+			  <PropertyRef Name="role_id" />
+			</Principal>
+			<Dependent Role="user_roles">
+			  <PropertyRef Name="role_id" />
+			</Dependent>
+		  </ReferentialConstraint>
+		</Association>
+		<EntityContainer Name="gisportalModelStoreContainer">
+		  <EntitySet Name="roles" EntityType="Self.roles" Schema="dbo" store:Type="Tables" />
+		  <EntitySet Name="security" EntityType="Self.security" Schema="dbo" store:Type="Tables" />
+		  <EntitySet Name="security_roles" EntityType="Self.security_roles" Schema="dbo" store:Type="Tables" />
+		  <EntitySet Name="user_roles" EntityType="Self.user_roles" Schema="dbo" store:Type="Tables" />
+		  <EntitySet Name="users" EntityType="Self.users" Schema="dbo" store:Type="Tables" />
+		  <AssociationSet Name="FK_security_roles_roles" Association="Self.FK_security_roles_roles">
+			<End Role="roles" EntitySet="roles" />
+			<End Role="security_roles" EntitySet="security_roles" />
+		  </AssociationSet>
+		  <AssociationSet Name="FK_security_roles_security" Association="Self.FK_security_roles_security">
+			<End Role="security" EntitySet="security" />
+			<End Role="security_roles" EntitySet="security_roles" />
+		  </AssociationSet>
+		  <AssociationSet Name="FK_user_roles_roles" Association="Self.FK_user_roles_roles">
+			<End Role="roles" EntitySet="roles" />
+			<End Role="user_roles" EntitySet="user_roles" />
+		  </AssociationSet>
+		</EntityContainer>
+	  </Schema>
+	</edmx:StorageModels>
+	<!-- CSDL content -->
+	<edmx:ConceptualModels>
+	  <Schema Namespace="gisportalModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+		<EntityType Name="role">
+		  <Key>
+			<PropertyRef Name="role_id" />
+		  </Key>
+		  <Property Name="role_id" Type="Int32" Nullable="false" />
+		  <Property Name="name" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+		  <Property Name="disabled" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+		  <Property Name="disabled_date" Type="DateTime" Precision="3" />
+		  <Property Name="disabled_user_id" Type="Int32" />
+		  <NavigationProperty Name="security_roles" Relationship="Self.FK_security_roles_roles" FromRole="roles" ToRole="security_roles" />
+		  <NavigationProperty Name="user_roles" Relationship="Self.FK_user_roles_roles" FromRole="roles" ToRole="user_roles" />
+		</EntityType>
+		<EntityType Name="security">
+		  <Key>
+			<PropertyRef Name="page_id" />
+		  </Key>
+		  <Property Name="page_id" Type="Int32" Nullable="false" />
+		  <Property Name="url" Type="String" MaxLength="255" FixedLength="false" Unicode="false" Nullable="false" />
+		  <Property Name="name" Type="String" MaxLength="128" FixedLength="false" Unicode="false" />
+		  <Property Name="description" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+		  <Property Name="disabled" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+		  <Property Name="disabled_date" Type="DateTime" Precision="3" />
+		  <Property Name="disabled_user_id" Type="Int32" />
+		  <NavigationProperty Name="security_roles" Relationship="Self.FK_security_roles_security" FromRole="security" ToRole="security_roles" />
+		</EntityType>
+		<EntityType Name="security_roles">
+		  <Key>
+			<PropertyRef Name="role_id" />
+			<PropertyRef Name="page_id" />
+		  </Key>
+		  <Property Name="role_id" Type="Int32" Nullable="false" />
+		  <Property Name="page_id" Type="Int32" Nullable="false" />
+		  <Property Name="action_datetime" Type="DateTime" Precision="3" />
+		  <Property Name="action_user" Type="Int32" />
+		  <Property Name="action_type" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+		  <NavigationProperty Name="role" Relationship="Self.FK_security_roles_roles" FromRole="security_roles" ToRole="roles" />
+		  <NavigationProperty Name="security" Relationship="Self.FK_security_roles_security" FromRole="security_roles" ToRole="security" />
+		</EntityType>
+		<EntityType Name="user_roles">
+		  <Key>
+			<PropertyRef Name="user_id" />
+			<PropertyRef Name="role_id" />
+		  </Key>
+		  <Property Name="user_id" Type="Int32" Nullable="false" />
+		  <Property Name="role_id" Type="Int32" Nullable="false" />
+		  <Property Name="action_datetime" Type="DateTime" Precision="3" />
+		  <Property Name="action_user" Type="Int32" />
+		  <Property Name="action_type" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+		  <NavigationProperty Name="role" Relationship="Self.FK_user_roles_roles" FromRole="user_roles" ToRole="roles" />
+		  
+		</EntityType>
+		<EntityType Name="user">
+		  <Key>
+			<PropertyRef Name="user_id" />
+		  </Key>
+		  <Property Name="user_id" Type="Int32" Nullable="false" />
+		  <Property Name="network_id" Type="String" MaxLength="10" FixedLength="false" Unicode="false" Nullable="false" />
+		  <Property Name="employee_id" Type="Int32" />
+		  <Property Name="first_name" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+		  <Property Name="last_name" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+		  <Property Name="last_login" Type="DateTime" Precision="3" />
+		  <Property Name="last_updated" Type="DateTime" Precision="3" />
+		  <Property Name="disabled" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+		  <Property Name="disabled_date" Type="DateTime" Precision="3" />
+		  <Property Name="disabled_user_id" Type="Int32" />
+		</EntityType>
+		<Association Name="FK_security_roles_roles">
+		  <End Role="roles" Type="Self.role" Multiplicity="1" />
+		  <End Role="security_roles" Type="Self.security_roles" Multiplicity="*" />
+		  <ReferentialConstraint>
+			<Principal Role="roles">
+			  <PropertyRef Name="role_id" />
+			</Principal>
+			<Dependent Role="security_roles">
+			  <PropertyRef Name="role_id" />
+			</Dependent>
+		  </ReferentialConstraint>
+		</Association>
+		<Association Name="FK_user_roles_roles">
+		  <End Role="roles" Type="Self.role" Multiplicity="1" />
+		  <End Role="user_roles" Type="Self.user_roles" Multiplicity="*" />
+		  <ReferentialConstraint>
+			<Principal Role="roles">
+			  <PropertyRef Name="role_id" />
+			</Principal>
+			<Dependent Role="user_roles">
+			  <PropertyRef Name="role_id" />
+			</Dependent>
+		  </ReferentialConstraint>
+		</Association>
+		<Association Name="FK_security_roles_security">
+		  <End Role="security" Type="Self.security" Multiplicity="1" />
+		  <End Role="security_roles" Type="Self.security_roles" Multiplicity="*" />
+		  <ReferentialConstraint>
+			<Principal Role="security">
+			  <PropertyRef Name="page_id" />
+			</Principal>
+			<Dependent Role="security_roles">
+			  <PropertyRef Name="page_id" />
+			</Dependent>
+		  </ReferentialConstraint>
+		</Association>
+		<EntityContainer Name="gisportalEntities1" annotation:LazyLoadingEnabled="true">
+		  <EntitySet Name="roles" EntityType="Self.role" />
+		  <EntitySet Name="securities" EntityType="Self.security" />
+		  <EntitySet Name="security_roles" EntityType="Self.security_roles" />
+		  <EntitySet Name="user_roles" EntityType="Self.user_roles" />
+		  <EntitySet Name="users" EntityType="Self.user" />
+		  <AssociationSet Name="FK_security_roles_roles" Association="Self.FK_security_roles_roles">
+			<End Role="roles" EntitySet="roles" />
+			<End Role="security_roles" EntitySet="security_roles" />
+		  </AssociationSet>
+		  <AssociationSet Name="FK_user_roles_roles" Association="Self.FK_user_roles_roles">
+			<End Role="roles" EntitySet="roles" />
+			<End Role="user_roles" EntitySet="user_roles" />
+		  </AssociationSet>
+		  <AssociationSet Name="FK_security_roles_security" Association="Self.FK_security_roles_security">
+			<End Role="security" EntitySet="securities" />
+			<End Role="security_roles" EntitySet="security_roles" />
+		  </AssociationSet>
+		</EntityContainer>
+	  </Schema>
+	</edmx:ConceptualModels>
+	<!-- C-S mapping content -->
+	<edmx:Mappings>
+	  <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+		<EntityContainerMapping StorageEntityContainer="gisportalModelStoreContainer" CdmEntityContainer="gisportalEntities1">
+		  <EntitySetMapping Name="roles">
+			<EntityTypeMapping TypeName="gisportalModel.role">
+			  <MappingFragment StoreEntitySet="roles">
+				<ScalarProperty Name="role_id" ColumnName="role_id" />
+				<ScalarProperty Name="name" ColumnName="name" />
+				<ScalarProperty Name="disabled" ColumnName="disabled" />
+				<ScalarProperty Name="disabled_date" ColumnName="disabled_date" />
+				<ScalarProperty Name="disabled_user_id" ColumnName="disabled_user_id" />
+			  </MappingFragment>
+			</EntityTypeMapping>
+		  </EntitySetMapping>
+		  <EntitySetMapping Name="securities">
+			<EntityTypeMapping TypeName="gisportalModel.security">
+			  <MappingFragment StoreEntitySet="security">
+				<ScalarProperty Name="page_id" ColumnName="page_id" />
+				<ScalarProperty Name="url" ColumnName="url" />
+				<ScalarProperty Name="name" ColumnName="name" />
+				<ScalarProperty Name="description" ColumnName="description" />
+				<ScalarProperty Name="disabled" ColumnName="disabled" />
+				<ScalarProperty Name="disabled_date" ColumnName="disabled_date" />
+				<ScalarProperty Name="disabled_user_id" ColumnName="disabled_user_id" />
+			  </MappingFragment>
+			</EntityTypeMapping>
+		  </EntitySetMapping>
+		  <EntitySetMapping Name="security_roles">
+			<EntityTypeMapping TypeName="gisportalModel.security_roles">
+			  <MappingFragment StoreEntitySet="security_roles">
+				<ScalarProperty Name="role_id" ColumnName="role_id" />
+				<ScalarProperty Name="page_id" ColumnName="page_id" />
+				<ScalarProperty Name="action_datetime" ColumnName="action_datetime" />
+				<ScalarProperty Name="action_user" ColumnName="action_user" />
+				<ScalarProperty Name="action_type" ColumnName="action_type" />
+			  </MappingFragment>
+			</EntityTypeMapping>
+		  </EntitySetMapping>
+		  <EntitySetMapping Name="user_roles">
+			<EntityTypeMapping TypeName="gisportalModel.user_roles">
+			  <MappingFragment StoreEntitySet="user_roles">
+				<ScalarProperty Name="user_id" ColumnName="user_id" />
+				<ScalarProperty Name="role_id" ColumnName="role_id" />
+				<ScalarProperty Name="action_datetime" ColumnName="action_datetime" />
+				<ScalarProperty Name="action_user" ColumnName="action_user" />
+				<ScalarProperty Name="action_type" ColumnName="action_type" />
+			  </MappingFragment>
+			</EntityTypeMapping>
+		  </EntitySetMapping>
+		  <EntitySetMapping Name="users">
+			<EntityTypeMapping TypeName="gisportalModel.user">
+			  <MappingFragment StoreEntitySet="users">
+				<ScalarProperty Name="user_id" ColumnName="user_id" />
+				<ScalarProperty Name="network_id" ColumnName="network_id" />
+				<ScalarProperty Name="employee_id" ColumnName="employee_id" />
+				<ScalarProperty Name="first_name" ColumnName="first_name" />
+				<ScalarProperty Name="last_name" ColumnName="last_name" />
+				<ScalarProperty Name="last_login" ColumnName="last_login" />
+				<ScalarProperty Name="last_updated" ColumnName="last_updated" />
+				<ScalarProperty Name="disabled" ColumnName="disabled" />
+				<ScalarProperty Name="disabled_date" ColumnName="disabled_date" />
+				<ScalarProperty Name="disabled_user_id" ColumnName="disabled_user_id" />
+			  </MappingFragment>
+			</EntityTypeMapping>
+		  </EntitySetMapping>
+		</EntityContainerMapping>
+	  </Mapping>
+	</edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+	<Connection>
+	  <DesignerInfoPropertySet>
+		<DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+	  </DesignerInfoPropertySet>
+	</Connection>
+	<Options>
+	  <DesignerInfoPropertySet>
+		<DesignerProperty Name="ValidateOnBuild" Value="true" />
+		<DesignerProperty Name="EnablePluralization" Value="true" />
+		<DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+		<DesignerProperty Name="UseLegacyProvider" Value="false" />
+		<DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+	  </DesignerInfoPropertySet>
+	</Options>
+	<!-- Diagram content (shape and connector positions) -->
+	<Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

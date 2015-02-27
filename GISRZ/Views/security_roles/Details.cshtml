@@ -1,0 +1,58 @@
+﻿@model GISRZ.Models.security_roles
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>security_roles</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.action_datetime)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.action_datetime)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.action_user)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.action_user)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.action_type)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.action_type)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.role.name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.role.name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.security.url)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.security.url)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

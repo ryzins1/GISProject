@@ -1,0 +1,81 @@
+﻿@model IEnumerable<GISRZ.Models.user>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.network_id)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.employee_id)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.first_name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.last_name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.last_login)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.last_updated)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.disabled)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.disabled_date)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.disabled_user_id)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.network_id)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.employee_id)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.first_name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.last_name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.last_login)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.last_updated)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.disabled)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.disabled_date)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.disabled_user_id)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.user_id }) |
+            @Html.ActionLink("Details", "Details", new { id=item.user_id }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.user_id })
+        </td>
+    </tr>
+}
+
+</table>
